@@ -8,3 +8,6 @@ SOURCES += \
         main.cpp
 
 HEADERS +=
+
+DISTFILES += \
+    analisis_desafio_1.txt

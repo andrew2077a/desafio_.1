@@ -1,0 +1,57 @@
+ANÁLISIS TEÓRICO DEL DESAFÍO DE TETRIS
+El corazón del desafío es representar y manipular un tablero de juego y las piezas (tetriminos) de una manera que no es la intuitiva (matrices 2D), sino usando operaciones a nivel de bits para maximizar la eficiencia. Esto requiere un cambio de paradigma en cómo piensas sobre los datos.
+
+
+1. Representación de Datos con Bits: El Tablero
+Dado que el ancho del tablero debe ser múltiplo de 8, podemos aprovechar que 8 bits forman un byte. Esto nos permite representar una fila del tablero como uno o varios números enteros sin signo.
+
+(La representación del tablero lo haremos de la siguiente manera, nosotros vamos a tomar variables tipo char que representen cada espacio, la razón por la que usaremos esas variables será porque ocupan apenas un bits. Si está vacío será un punto y si está ocupado serán dos corchetes haciéndolo parecer un cuadrado, los datos tipo char los representaremos en binario.)
+
+
+Creación del tablero: Para un tablero de ancho W y alto H, necesitaríamos un arreglo dinámico de H elementos, donde cada elemento es un entero que puede almacenar W bits.
+Ajustar el tamaño de la matriz: (Para ajustar el tamaño de la matriz nosotros usaremos la memoria dinámica ya que por medio de esta podemos hacer que el usuario elija que tan grande sera (el numero minimo de ancho y de largo sera 8 ), esto lo haremos por medio de apuntadores)
+
+
+
+
+2. Representación de Datos con Bits: Las Piezas (Tetraminós)
+Cada pieza también debe ser representada como una máscara de bits. Aquí la cosa se pone más interesante porque las piezas tienen formas irregulares.
+
+Similar al tablero, una pieza de tamaño NxM puede ser representada como un arreglo de N números enteros, donde cada número es una máscara de M bits. El uso de literales binarios (0b) hace que la representación de la pieza sea semánticamente clara .
+
+3. Manipulación: Operadores a Nivel de Bits (Bitwise)
+Operaciones necesarias para efectuar toda la lógica de fondo detrás del funcionamiento de las mecánicas del tetris:
+
+Desplazamiento (<<, >>): Para mover las piezas horizontalmente. Si una pieza está representada por una máscara de bits, desplazar esa máscara a la izquierda (<<) la mueve a la derecha en el tablero, y viceversa. Por ejemplo, si la máscara de una fila de pieza es 0b00111100, un desplazamiento a la derecha >> 1 la convertiría en 0b00011110, moviéndola celda a la izquierda .
+
+AND bitwise (&): Este podría ser muy útil para la detección de colisiones. Para verificar si una pieza en una posición (x, y) puede colocarse, se compara su máscara con la máscara de la fila correspondiente del tablero. Si (mascara_pieza & mascara_tablero_fila) != 0, significa que al menos un bit de la pieza coincide con un bit ocupado en el tablero, y la colocación no es válida .
+
+OR bitwise (|): Para fijar una pieza en el tablero. Una vez que la pieza toca el fondo y no hay colisión, se combina con el tablero usando mascara_tablero_fila |= mascara_pieza. Esto activa los bits de la pieza en el tablero, haciendo que la unificación entre el tablero y la pieza quede concretado.
+
+XOR bitwise (^): Puede ser útil para ciertos efectos, pero no es estrictamente necesario para la lógica principal.
+
+NOT bitwise (~): Útil para crear máscaras de límites. Por ejemplo, para comprobar si una pieza se sale por el borde derecho, puedes crear una máscara que tenga un (valor=1) sólo en las columnas válidas y usar para verificar si algún bit de la pieza está fuera.
+
+
+
+4. Rotación de Piezas
+La rotación es una operación bastante compleja ya que en sí, al no poder usarse un patrón ya predefinido de las rotaciones ya existentes para cada figura, nos vemos obligados a manipular los bits mediante el uso de máscaras con el fin de generar los patrones de rotación.
+
+Implementación Teórica: .En este caso, lo mas optimo seria trabajar con todos los tetriminos a manera de matrices nxn, donde aquellos bloques de la matriz que sí hacen parte de la figura podrían ser representados por 1 y los demás por 0.
+Tratamiento de bits: Tras definir lo anterior ahora se deben hacer  operaciones de bits en pro a tratar de aislar un bit específico para luego reubicarlo en su nueva posición. Para esto pueden usarse máscaras (&1), desplazamientos (<< o >>) y operaciones comparativas como el OR.
+
+
+
+5. Gestión de Memoria Dinámica y Punteros: A continuación se desarrollaran algunos puntos importantes que son alusivos a esta sección del desafío:
+
+Asignación Dinámica: Deberás usar new para crear el tablero, cuyo tamaño (ancho x alto) no se conoce hasta la ejecución. Esto para aprovechar (en el caso de recomenzar la partida) el espacio ya usado por el anterior tablero, de esta manera gastando menos memoria.
+
+Punteros para Eficiencia: Al limpiar una fila, se necesita bajar el contenido de las filas superiores. Esto es una operación de memoria que se puede hacer eficientemente con punteros y copia de memoria, o mediante un bucle que recorra las filas.
+
+Limpieza de Filas: El algoritmo para detectar una fila completa es simple: si la máscara de una fila del tablero es igual a (1 << ancho) - 1 (todos los bits a 1), está llena. Al eliminarla, debes liberar la memoria de esa fila (si es que se asigna individualmente) o desplazar todos los punteros de las filas superiores una posición hacia abajo. Esto implica copiar direcciones de memoria (punteros) en tu arreglo de filas, una operación muy rápida.
+
+
+CONCLUSIÓN
+Este documento de análisis busca delimitar y entender aquellos conceptos necesarios para la solución del problema propuesto en el desafío de la manera más óptima posible. Además dentro del desglose de los conceptos enfatizamos algunas opciones las cuales pueden llegar a ser implementadas en el futuro dentro de la solución.
+
+
