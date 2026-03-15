@@ -51,7 +51,24 @@ void primera_pieza(unsigned char** matriz, int ancho) {
 
 
 
-void cambio_posicion(){
+void cambio_abajo(int ancho, int alto, unsigned char** tablero){
 
+    int bytes_por_fila = ancho / 8;
+    alto-=1;
+
+    for(int i = 0; i < alto; i++) {
+        for(int b = 0; b < bytes_por_fila; b++) {
+
+            for(int bit = 7; bit >= 0; bit--) {
+                if(tablero[i][b] & (1 << bit)) {
+                    tablero[i+1][b]|=(1 << bit);
+                    tablero[i][b] &= ~(1 << bit);
+                    return ;
+                } else {
+                }
+            }
+        }
+    }
 }
+
 
