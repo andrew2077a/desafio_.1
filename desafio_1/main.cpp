@@ -2,6 +2,11 @@
 
 using namespace std;
 
+bool** creacion_matriz(int ancho, int alto);
+
+
+void impresion_matriz(int ancho, int alto, bool** matriz);
+
 int main(){
     int alto,ancho;//..
     while (true){
@@ -25,6 +30,12 @@ int main(){
             cout<<"Incorrecto, Ingrese otro numero"<<endl;
         }
     }
+    bool** miMatriz = creacion_matriz(ancho, alto);
+
+    impresion_matriz(ancho, alto, miMatriz);
+
+
+
     return 0;
 
 

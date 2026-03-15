@@ -3,28 +3,42 @@
 using namespace std;
 
 
-void matriz_impresa(int ancho,int largo){
-    int **matriz,i,e;
-    matriz= new int*[largo];
-    for(i=0;i<largo;i++){
-        matriz[i]=new int[ancho];
+bool **creacion_matriz(int ancho,int alto){
+    int i,e;
+    bool **matriz;
+    matriz= new bool*[alto];
+    for(i=0;i<alto;i++){
+        matriz[i]=new bool[ancho];
     }
 
-    for(i=0;i<largo;i++){
+    for(i=0;i<alto;i++){
         for(e=0;e<ancho;e++){
-            matriz[i][e]=0;
+            matriz[i][e]=true;
         }
-    }//.
-
-    for(i=0;i<largo;i++){
-        for(e=0;e<ancho;e++){
-            cout<<matriz[i][e]<<" ";
-        }
-        cout<<endl;
     }
+    return matriz;
 }
 
-int main(){
-    matriz_impresa( 4, 4);
-    return 0;
+void impresion_matriz(int ancho,int alto,bool **matriz){
+    int i,e;
+    for(i=0;i<alto;i++){
+        cout<<"|";
+        for(e=0;e<ancho;e++){
+            if (matriz[i][e]){
+                cout<<"."<<" ";
+            }
+            else{
+                cout<<"[]"<<" ";
+            }
+        }
+        cout<<"|"<<endl;
+    }
+
+}
+
+void eliminar(int ancho,int alto,bool **matriz){
+    for(int i=0;i<alto;i++){
+        delete [] matriz[i];
+    }
+    delete [] matriz;
 }
