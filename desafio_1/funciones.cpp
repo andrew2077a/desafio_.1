@@ -3,42 +3,55 @@
 using namespace std;
 
 
-bool **creacion_matriz(int ancho,int alto){
-    int i,e;
-    bool **matriz;
-    matriz= new bool*[alto];
-    for(i=0;i<alto;i++){
-        matriz[i]=new bool[ancho];
-    }
+unsigned char** crear_tablero(int ancho, int alto) {
 
-    for(i=0;i<alto;i++){
-        for(e=0;e<ancho;e++){
-            matriz[i][e]=true;
+    int bytes_por_fila = ancho / 8;
+
+    unsigned char** tablero = new unsigned char*[alto];
+
+    for(int i = 0; i < alto; i++) {
+        tablero[i] = new unsigned char[bytes_por_fila];
+
+        for(int j = 0; j < bytes_por_fila; j++) {
+            tablero[i][j] = 0;
         }
     }
-    return matriz;
+
+    return tablero;
 }
 
-void impresion_matriz(int ancho,int alto,bool **matriz){
-    int i,e;
-    for(i=0;i<alto;i++){
+void impresion_matriz(int ancho, int alto, unsigned char** tablero) {
+    int bytes_por_fila = ancho / 8;
+
+    for(int i = 0; i < alto; i++) {
         cout<<"|";
-        for(e=0;e<ancho;e++){
-            if (matriz[i][e]){
-                cout<<"."<<" ";
-            }
-            else{
-                cout<<"[]"<<" ";
+        for(int b = 0; b < bytes_por_fila; b++) {
+
+            for(int bit = 7; bit >= 0; bit--) {
+                if(tablero[i][b] & (1 << bit)) {
+                    cout << "[]";
+                } else {
+                    cout << "."<<" ";
+                }
             }
         }
         cout<<"|"<<endl;
     }
+}
+
+void primera_pieza(unsigned char** matriz, int ancho) {
+    int a = ancho / 2;
+
+    int byte_pos = a / 8;
+    int bit_pos = 7 - (a % 8);
+
+    matriz[0][byte_pos] |= (1 << bit_pos);
+}
+
+
+
+
+void cambio_posicion(){
 
 }
 
-void eliminar(int ancho,int alto,bool **matriz){
-    for(int i=0;i<alto;i++){
-        delete [] matriz[i];
-    }
-    delete [] matriz;
-}

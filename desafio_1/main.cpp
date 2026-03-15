@@ -2,10 +2,10 @@
 
 using namespace std;
 
-bool** creacion_matriz(int ancho, int alto);
-
-
-void impresion_matriz(int ancho, int alto, bool** matriz);
+unsigned char** crear_tablero(int ancho, int alto);
+void impresion_matriz(int ancho, int alto, unsigned char** tablero);
+void destruir_tablero(unsigned char** tablero, int alto);
+void primera_pieza(unsigned char** matriz, int ancho);
 
 int main(){
     int alto,ancho;//..
@@ -30,13 +30,11 @@ int main(){
             cout<<"Incorrecto, Ingrese otro numero"<<endl;
         }
     }
-    bool** miMatriz = creacion_matriz(ancho, alto);
-
-    impresion_matriz(ancho, alto, miMatriz);
-
-
+    unsigned char** primatriz = crear_tablero(ancho, alto);
+    primera_pieza(primatriz, ancho);
+    impresion_matriz( ancho,  alto, primatriz);
 
     return 0;
 
-
 }
+
