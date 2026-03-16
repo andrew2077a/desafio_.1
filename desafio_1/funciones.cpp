@@ -106,9 +106,14 @@ void cambio_izquierda(int ancho, int alto, unsigned char** tablero){
                         return;
                     }
 
+
                 }
             }
         }
     }
+}
+
+void coliciones(){
+
 }
 
