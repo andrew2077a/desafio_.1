@@ -7,6 +7,8 @@ void impresion_matriz(int ancho, int alto, unsigned char** tablero);
 void destruir_tablero(unsigned char** tablero, int alto);
 void primera_pieza(unsigned char** matriz, int ancho);
 void cambio_abajo(int ancho, int alto, unsigned char** tablero);
+void cambio_derecha(int ancho, int alto, unsigned char** tablero);
+void cambio_izquierda(int ancho, int alto, unsigned char** tablero);
 
 int main(){
     int alto,ancho;//..
@@ -43,24 +45,27 @@ int main(){
         cin>>a;
         switch(a){
         case ('A'):
-            cambio_abajo( ancho, alto, tablero);
+            cambio_izquierda( ancho,  alto, tablero);
             impresion_matriz( ancho,  alto, tablero);
             break;
         case('D'):
+            cambio_derecha(ancho, alto, tablero);
+            impresion_matriz( ancho,  alto, tablero);
             break;
         case('S'):
+            cambio_abajo( ancho, alto, tablero);
+            impresion_matriz( ancho,  alto, tablero);
             break;
         case('W'):
             break;
         case('Q'):
+            return 0;
             break;
         default:
             cout<<"Ingreso ua letra invalida";
-
-
         }
-    return 0;
     }
+    return 0;
 
 }
 
