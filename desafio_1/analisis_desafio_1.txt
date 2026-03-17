@@ -65,9 +65,5 @@ Limpieza de filas: Se plantea detectar filas completas verificando que todos los
 Gestión de memoria: Se considera la liberación de memoria como parte del manejo adecuado del sistema.
 
 CONCLUSIÓN
-Este análisis plantea el uso de bits como base para representar tanto el tablero como las piezas, junto con las operaciones necesarias para manipularlos. Se define la estructura general del sistema, incluyendo la creación del tablero, la representación de las piezas y las operaciones fundamentales que permiten el funcionamiento del juego.
-
-CONCLUSIÓN
-Este documento de análisis busca delimitar y entender aquellos conceptos necesarios para la solución del problema propuesto en el desafío de la manera más óptima posible. Además dentro del desglose de los conceptos enfatizamos algunas opciones las cuales pueden llegar a ser implementadas en el futuro dentro de la solución.
-
+Este análisis plantea el uso de bits como base para representar tanto el tablero como las piezas, junto con las operaciones necesarias para manipularlos. Se define la estructura general del sistema, incluyendo la creación del tablero, la representación de las piezas y las operaciones fundamentales que permiten el funcionamiento del juego..
 
