@@ -105,8 +105,6 @@ void cambio_izquierda(int ancho, int alto, unsigned char** tablero){
                         tablero[i][b] &= ~(1 << bit);
                         return;
                     }
-
-
                 }
             }
         }
