@@ -65,16 +65,93 @@ void imprimir_pieza(
     unsigned char alto,
     const char* nombre
     ) {
-    cout << "Pieza " << nombre << " (" << (int)ancho << "x" << (int)alto << "):\n";
+    cout << "Pieza " << nombre << " (" << (int)ancho << "x" << (int)alto << "): "<<endl;
 
     for (int i = 0; i < alto; i++) {
         cout << "  ";
         for (int b = ancho - 1; b >= 0; b--) {
             cout << ((filas[i] >> b) & 1 ? "#" : ".");
         }
-        cout << "\n";
+        cout <<endl;
     }
 }
+
+
+void imprimir_frame(int ancho, int alto, unsigned char** tablero,
+                    unsigned char pieza[4], int p_ancho, int p_alto,
+                    int pieza_x, int pieza_y) {
+
+    int bytes_por_fila = ancho / 8;
+
+    for(int x = 0; x <= ancho; x++){
+        if(x+2<=ancho+1){
+            cout << "_";
+        }
+        else{
+            cout << "_"; cout << "\n";
+        }
+    }
+
+    // filas 
+    for(int y = 0; y < alto; y++) {
+
+        cout << "|";
+        int x_actual = 0; // Columna visual actual
+
+        // bytes x filas
+        for(int b = 0; b < bytes_por_fila; b++) {
+
+            // bit x bit (izq ---> der)
+            for(int bit = 7; bit >= 0; bit--) {
+
+                // Hay bloque en el tablero?
+                bool bit_tablero = (tablero[y][b] >> bit) & 1;
+
+                // Esta la pieza? (Incializar en false en predeterminado)
+                bool bit_pieza = false;
+
+                // 1er bool: verifica si la pocision_y de la pieza es menor o igual para la fila actual.
+                /// Luego se hace un AND verificando que la fila actual (y) sea MENOR al límite inferior de la pieza (pieza_y + p_alto).
+                bool en_rango_vertical = (y >= pieza_y) && (y < pieza_y + p_alto);
+                // 2do bool: Se hace las mismas operaciones pero con las columnas o pocisiones en x.
+                bool en_rango_horizontal = (x_actual >= pieza_x) && (x_actual < pieza_x + p_ancho);
+
+                // Si los rangos tanto en x como en y con True, traducimos las coordenadas globales del tablero a 
+                //las coordenadas locales/internas de la pieza.
+                if (en_rango_vertical && en_rango_horizontal){
+                    int alto_verdadero = y - pieza_y;
+                    int ancho_verdadero = x_actual - pieza_x;
+
+                    // Calculamos el índice exacto del bit a leer (voltando su lectura----> (p_ancho - 1)-ancho_verdadero) y 
+                    // aplicamos la máscara '& 1' para saber si el bloque está encendido (1) o apagado (0).
+                    int bit_leer = (p_ancho - 1) - ancho_verdadero;
+                    bit_pieza = (pieza[alto_verdadero] >> bit_leer) & 1;
+                }
+
+                // Impresion del bit hallado
+                if (bit_tablero || bit_pieza){
+                    cout << "#";
+                }
+                else{
+                    cout << ".";
+                }
+
+                x_actual++; // Sgnt. columna
+            }
+        }
+        cout << "|"<<endl;
+    }
+
+    for(int x = 0; x <= ancho+1; x++){
+        if(x<=ancho){
+            cout << "-";
+        }
+        else{
+            cout << "-"; cout <<endl;
+        }
+    }
+}
+
 
 int main() {
     iniciar_aleatoriedad();
