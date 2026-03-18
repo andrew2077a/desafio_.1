@@ -153,27 +153,55 @@ void imprimir_frame(int ancho, int alto, unsigned char** tablero,
 }
 
 
-int main() {
-    iniciar_aleatoriedad();
 
-    unsigned char pieza_actual[4];
-    unsigned char ancho_actual, alto_actual;
-    int tipo_actual;
+bool verificar_colision(int ancho, int alto, unsigned char** tablero,
+                        unsigned char pieza[4], int p_ancho, int p_alto,
+                        int futuro_x, int futuro_y) {
 
-    for (int i = 0; i < 5; i++) {
-        generar_pieza_aleatoria(pieza_actual, ancho_actual, alto_actual, tipo_actual);
+    // recorrer area de la pieza
+    for (int fila_pieza = 0; fila_pieza < p_alto; fila_pieza++) {
+        for (int col_pieza = 0; col_pieza < p_ancho; col_pieza++) {
 
-        cout << "\n--- Pieza #" << i+1 << " (tipo " << tipo_actual << ") ---\n";
-        imprimir_pieza(pieza_actual, ancho_actual, alto_actual,
-                       (tipo_actual == 0 ? "I" :
-                            tipo_actual == 1 ? "O" :
-                            tipo_actual == 2 ? "T" :
-                            tipo_actual == 3 ? "S" :
-                            tipo_actual == 4 ? "Z" :
-                            tipo_actual == 5 ? "J" :
-                                                 "L"));
+            // verificar si el bit de la pieza es # o .
+            int bit_leer = (p_ancho - 1) - col_pieza;
+            bool bloque_solido_pieza = (pieza[fila_pieza] >> bit_leer) & 1;
+
+            if (!bloque_solido_pieza){
+                continue;
+            }
+
+            //si el bit es #, verificamos su futura pocision (x,y) en el tablero
+            int y_tablero = futuro_y + fila_pieza;
+            int x_tablero = futuro_x + col_pieza;
+
+            // colision con bordes
+            if (x_tablero < 0 || x_tablero >= ancho || y_tablero >= alto) {
+                return true;
+            }
+
+            if (y_tablero < 0){
+                continue;
+            }
+
+            //cf --> coordenada futura
+            // calcula a qué byte y bit del tablero base corresponde esta coordenada
+            int byte_cf = x_tablero / 8;
+            int bit_cf = 7 - (x_tablero % 8);
+
+            // ya hay un bloque que ocupa ese espacio?
+            bool bloque_ocupado_tablero = (tablero[y_tablero][byte_cf] >> bit_cf) & 1;
+
+            if (bloque_ocupado_tablero) {
+                return true;
+            }
+        }
     }
 
+    return false;
+}
+
+
+int main() {
     return 0;
 }
 
