@@ -200,6 +200,128 @@ bool verificar_colision(int ancho, int alto, unsigned char** tablero,
     return false;
 }
 
+void eliminar_filas(int ancho, int alto, unsigned char** tablero) {
+
+    int bytes_por_fila = ancho / 8;
+
+
+    for(int i = alto - 1; i >= 0; i--) {
+        //se asume que la fila esta llena
+        bool fila_llena = true;
+
+        for(int j = 0; j < ancho; j++) {
+
+            // Hallar el bit exacto
+            int byte_i = j / 8;
+            int bit_i = 7 - (j % 8);
+
+            // Leemos si hay bloque (1) o vacío (0)
+            bool bloque_ocupado = (tablero[i][byte_i] >> bit_i) & 1;
+
+            if (!bloque_ocupado) {
+                fila_llena = false;
+                break;
+            }
+        }
+
+
+        if (fila_llena) {
+
+            // Tomamos la fila actual (i) y todas las que están por encima de ella,
+            // y hacemos que copien la información de la fila que tienen arriba.
+            for (int y = i; y > 0; y--) {
+                for (int b = 0; b < bytes_por_fila; b++) {
+                    tablero[y][b] = tablero[y - 1][b];
+                }
+            }
+
+            // Como todo bajó un espacio, la fila más alta del tablero (la 0)
+            // se queda duplicada, así que la vaciamos llenándola de ceros (0).
+            for (int b = 0; b < bytes_por_fila; b++) {
+                tablero[0][b] = 0;
+            }
+
+            //Como la fila i cayo se debe reavaluar su estado, x lo tanto sumamos en i
+            //para revertir el i-- del for y reevaluar
+            i++;
+        }
+    }
+}
+
+
+bool intentar_rotar(unsigned char pieza_actual[4], int N,
+                    int &p_ancho, int &p_alto,
+                    int pos_x, int pos_y,
+                    int ancho_tablero, int alto_tablero, unsigned char** tablero) {
+
+    // crear clon
+    unsigned char pieza_clon[4];
+    for(int i = 0; i < 4; i++) {
+        pieza_clon[i] = pieza_actual[i];
+    }
+
+    // rotar el clon
+    rotar_pieza_horario(pieza_clon, N);
+
+    // nuevas dimensiones de la pieza( se invierten)
+    int nuevo_ancho = p_alto;
+    int nuevo_alto = p_ancho;
+
+    // comprobar colisiones del clon
+    bool choca = verificar_colision(ancho_tablero, alto_tablero, tablero,
+                                    pieza_clon, nuevo_ancho, nuevo_alto,
+                                    pos_x, pos_y);
+
+
+    if (choca) {
+        return false;
+    } else {
+        //Actualizamos la pieza real con los datos del clon
+        for(int i = 0; i < 4; i++) {
+            pieza_actual[i] = pieza_clon[i];
+        }
+        p_ancho = nuevo_ancho;
+        p_alto = nuevo_alto;
+        return true;
+    }
+}
+
+
+
+void rotar_pieza_horario(unsigned char pieza[4], int N) {
+
+    //En blanco para construir la pieza rotada
+    unsigned char temporal[4] = {0, 0, 0, 0};
+
+    for (int fila = 0; fila < N; fila++) {
+        for (int col = 0; col < N; col++) {
+
+            // Leer el bit actual
+            int bit_leer = (N - 1) - col;
+            bool bit_encendido = (pieza[fila] >> bit_leer) & 1;
+
+            // si bit = 1, calculamos su nueva pocision
+            if (bit_encendido) {
+                int nueva_fila = col;
+                int nueva_col = (N - 1) - fila;
+
+                // Determinar el nuevo indice del bit analizadp
+                int bit_escribir = (N - 1) - nueva_col;
+
+                // encendemos el bit en la pieza temporal usando OR (|) ----> concatena los bits sin perder info.
+                // (1 << bit_escribir) crea un '1' desplazado a la posición correcta
+                temporal[nueva_fila] |= (1 << bit_escribir);
+            }
+        }
+    }
+
+    for (int i = 0; i < N; i++) {
+        pieza[i] = temporal[i];
+    }
+
+}
+
+
 
 int main() {
     return 0;
