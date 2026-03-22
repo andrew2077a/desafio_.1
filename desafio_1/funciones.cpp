@@ -23,6 +23,29 @@ unsigned char ANCHO_PIEZAS[7] = {1, 2, 3, 3, 3, 3, 3};
 unsigned char ALTO_PIEZAS[7]  = {4, 2, 2, 2, 2, 2, 2};
 
 
+unsigned char** crear_tablero(int ancho, int alto) {
+    int bytes_por_fila = ancho / 8;
+    unsigned char** tablero = new unsigned char*[alto];
+
+    for(int i = 0; i < alto; i++){
+
+        tablero[i] = new unsigned char[bytes_por_fila];
+        for(int j = 0; j < bytes_por_fila; j++){
+            tablero[i][j] = 0;
+        }
+    }
+    return tablero;
+}
+
+
+void destruir_tablero(unsigned char** tablero, int alto) {
+    for(int i = 0; i < alto; i++){
+        delete[] tablero[i];
+    }
+
+    delete[] tablero;
+}
+
 void iniciar_aleatoriedad() {
     srand(time(nullptr));
 }
