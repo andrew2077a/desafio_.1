@@ -58,98 +58,54 @@ void generar_pieza_aleatoria(
     cargar_pieza(tipo_destino, filas_destino, ancho_destino, alto_destino);
 }
 
-
-void imprimir_pieza(
-    const unsigned char filas[4],
-    unsigned char ancho,
-    unsigned char alto,
-    const char* nombre
-    ) {
-    cout << "Pieza " << nombre << " (" << (int)ancho << "x" << (int)alto << "): "<<endl;
-
-    for (int i = 0; i < alto; i++) {
-        cout << "  ";
-        for (int b = ancho - 1; b >= 0; b--) {
-            cout << ((filas[i] >> b) & 1 ? "#" : ".");
-        }
-        cout <<endl;
-    }
-}
-
-
 void imprimir_frame(int ancho, int alto, unsigned char** tablero,
                     unsigned char pieza[4], int p_ancho, int p_alto,
                     int pieza_x, int pieza_y) {
 
     int bytes_por_fila = ancho / 8;
 
-    for(int x = 0; x <= ancho; x++){
-        if(x+2<=ancho+1){
-            cout << "_";
-        }
-        else{
-            cout << "_"; cout << "\n";
-        }
+    for(int x = 0; x < (ancho * 2) + 2; x++) {
+        cout << "_";
     }
+    cout <<endl;
 
-    // filas 
     for(int y = 0; y < alto; y++) {
-
         cout << "|";
-        int x_actual = 0; // Columna visual actual
+        int x_actual = 0;
 
-        // bytes x filas
         for(int b = 0; b < bytes_por_fila; b++) {
-
-            // bit x bit (izq ---> der)
             for(int bit = 7; bit >= 0; bit--) {
 
-                // Hay bloque en el tablero?
                 bool bit_tablero = (tablero[y][b] >> bit) & 1;
-
-                // Esta la pieza? (Incializar en false en predeterminado)
                 bool bit_pieza = false;
 
-                // 1er bool: verifica si la pocision_y de la pieza es menor o igual para la fila actual.
-                /// Luego se hace un AND verificando que la fila actual (y) sea MENOR al límite inferior de la pieza (pieza_y + p_alto).
                 bool en_rango_vertical = (y >= pieza_y) && (y < pieza_y + p_alto);
-                // 2do bool: Se hace las mismas operaciones pero con las columnas o pocisiones en x.
                 bool en_rango_horizontal = (x_actual >= pieza_x) && (x_actual < pieza_x + p_ancho);
 
-                // Si los rangos tanto en x como en y con True, traducimos las coordenadas globales del tablero a 
-                //las coordenadas locales/internas de la pieza.
                 if (en_rango_vertical && en_rango_horizontal){
                     int alto_verdadero = y - pieza_y;
                     int ancho_verdadero = x_actual - pieza_x;
-
-                    // Calculamos el índice exacto del bit a leer (voltando su lectura----> (p_ancho - 1)-ancho_verdadero) y 
-                    // aplicamos la máscara '& 1' para saber si el bloque está encendido (1) o apagado (0).
                     int bit_leer = (p_ancho - 1) - ancho_verdadero;
                     bit_pieza = (pieza[alto_verdadero] >> bit_leer) & 1;
                 }
 
-                // Impresion del bit hallado
                 if (bit_tablero || bit_pieza){
-                    cout << "#";
+                    cout << "[]";
                 }
                 else{
-                    cout << ".";
+                    cout << " .";
                 }
 
-                x_actual++; // Sgnt. columna
+                x_actual++;
             }
         }
-        cout << "|"<<endl;
+        cout <<"|"<<endl;
     }
 
-    for(int x = 0; x <= ancho+1; x++){
-        if(x<=ancho){
-            cout << "-";
-        }
-        else{
-            cout << "-"; cout <<endl;
-        }
+    for(int x = 0; x < (ancho * 2) + 2; x++) {
+        cout << "-";
     }
+    cout <<endl;
 }
 
 
@@ -200,8 +156,8 @@ bool verificar_colision(int ancho, int alto, unsigned char** tablero,
     return false;
 }
 
-void eliminar_filas(int ancho, int alto, unsigned char** tablero) {
 
+void eliminar_filas(int ancho, int alto, unsigned char** tablero) {
     int bytes_por_fila = ancho / 8;
 
 
@@ -249,37 +205,59 @@ void eliminar_filas(int ancho, int alto, unsigned char** tablero) {
 }
 
 
-bool intentar_rotar(unsigned char pieza_actual[4], int N,
+void rotar_pieza_horario(unsigned char pieza[4], int p_ancho, int p_alto) {
+    unsigned char temporal[4] = {0, 0, 0, 0};
+
+    for (int fila = 0; fila < p_alto; fila++) {
+        for (int col = 0; col < p_ancho; col++) {
+
+            // Leer el bit de la pieza original
+            int bit_leer = (p_ancho - 1) - col;
+            bool bit_encendido = (pieza[fila] >> bit_leer) & 1;
+
+            if (bit_encendido) {
+                int nueva_fila = col;
+                int nueva_col = (p_alto - 1) - fila;
+
+                int nuevo_ancho = p_alto;
+                int bit_escribir = (nuevo_ancho - 1) - nueva_col;
+
+                // Guardamos el bit en la nueva posición
+                temporal[nueva_fila] |= (1 << bit_escribir);
+            }
+        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        pieza[i] = temporal[i];
+    }
+}
+
+
+bool intentar_rotar(unsigned char pieza_actual[4],
                     int &p_ancho, int &p_alto,
                     int pos_x, int pos_y,
                     int ancho_tablero, int alto_tablero, unsigned char** tablero) {
 
-    // crear clon
+    
     unsigned char pieza_clon[4];
-    for(int i = 0; i < 4; i++) {
-        pieza_clon[i] = pieza_actual[i];
-    }
+    for(int i = 0; i < 4; i++) pieza_clon[i] = pieza_actual[i];
 
-    // rotar el clon
-    rotar_pieza_horario(pieza_clon, N);
+    rotar_pieza_horario(pieza_clon, p_ancho, p_alto);
 
-    // nuevas dimensiones de la pieza( se invierten)
+
     int nuevo_ancho = p_alto;
     int nuevo_alto = p_ancho;
 
-    // comprobar colisiones del clon
+  
     bool choca = verificar_colision(ancho_tablero, alto_tablero, tablero,
                                     pieza_clon, nuevo_ancho, nuevo_alto,
                                     pos_x, pos_y);
 
-
     if (choca) {
         return false;
     } else {
-        //Actualizamos la pieza real con los datos del clon
-        for(int i = 0; i < 4; i++) {
-            pieza_actual[i] = pieza_clon[i];
-        }
+        for(int i = 0; i < 4; i++) pieza_actual[i] = pieza_clon[i];
         p_ancho = nuevo_ancho;
         p_alto = nuevo_alto;
         return true;
@@ -288,42 +266,46 @@ bool intentar_rotar(unsigned char pieza_actual[4], int N,
 
 
 
-void rotar_pieza_horario(unsigned char pieza[4], int N) {
+void fijar_pieza(unsigned char** tablero, unsigned char pieza[4], int p_ancho, int p_alto, int pos_x, int pos_y, int ancho_tablero, int alto_tablero) {
 
-    //En blanco para construir la pieza rotada
-    unsigned char temporal[4] = {0, 0, 0, 0};
+    // recorrer el area activa de la pieza
+    for (int fila = 0; fila < p_alto; fila++) {
+        for (int col = 0; col < p_ancho; col++) {
 
-    for (int fila = 0; fila < N; fila++) {
-        for (int col = 0; col < N; col++) {
-
-            // Leer el bit actual
-            int bit_leer = (N - 1) - col;
+            // extraer bit actual
+            int bit_leer = (p_ancho - 1) - col;
             bool bit_encendido = (pieza[fila] >> bit_leer) & 1;
 
-            // si bit = 1, calculamos su nueva pocision
             if (bit_encendido) {
-                int nueva_fila = col;
-                int nueva_col = (N - 1) - fila;
+                // calcular las coordenadas reales del bit en el tablero
+                int tablero_y = pos_y + fila;
+                int tablero_x = pos_x + col;
 
-                // Determinar el nuevo indice del bit analizadp
-                int bit_escribir = (N - 1) - nueva_col;
+                // Solo escribimos si las coordenadas están estrictamente dentro del tablero
+                if (tablero_y >= 0 && tablero_y < alto_tablero && tablero_x >= 0 && tablero_x < ancho_tablero) {
 
-                // encendemos el bit en la pieza temporal usando OR (|) ----> concatena los bits sin perder info.
-                // (1 << bit_escribir) crea un '1' desplazado a la posición correcta
-                temporal[nueva_fila] |= (1 << bit_escribir);
+                    // obtener indice exacto del bit dentro del tablero
+                    int byte_idx = tablero_x / 8;
+                    int bit_idx = 7 - (tablero_x % 8);
+
+                    // (Bitwise OR) ---> agregar en el mismo byte un nuevo bit (pieza)
+                    tablero[tablero_y][byte_idx] |= (1 << bit_idx);
+                }
             }
         }
     }
-
-    for (int i = 0; i < N; i++) {
-        pieza[i] = temporal[i];
-    }
-
 }
 
 
 
-int main() {
-    return 0;
-}
 
+
+bool comprobar_game_over(int ancho_tablero, int alto_tablero, unsigned char** tablero,
+                         unsigned char pieza[4], int p_ancho, int p_alto,
+                         int pos_x_inicial, int pos_y_inicial) {
+
+
+    return verificar_colision(ancho_tablero, alto_tablero, tablero,
+                              pieza, p_ancho, p_alto,
+                              pos_x_inicial, pos_y_inicial);
+}
