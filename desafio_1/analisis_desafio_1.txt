@@ -1,57 +1,122 @@
 ANÁLISIS TEÓRICO DEL DESAFÍO DE TETRIS
-El corazón del desafío es representar y manipular un tablero de juego y las piezas (tetriminos) de una manera que no es la intuitiva (matrices 2D), sino usando operaciones a nivel de bits para maximizar la eficiencia. Esto requiere un cambio de paradigma en cómo piensas sobre los datos.
 
-
+El corazón del desafío es representar y manipular un tablero de juego y las piezas (tetriminos) de una manera que no es la intuitiva (matrices 2D), sino usando operaciones a nivel de bits para maximizar la eficiencia. Esto implica cambiar la forma en la que entendemos los datos y cómo los vamos a manejar dentro del programa.
 1. Representación de Datos con Bits: El Tablero
-Dado que el ancho del tablero debe ser múltiplo de 8, podemos aprovechar que 8 bits forman un byte. Esto nos permite representar una fila del tablero como uno o varios números enteros sin signo.
 
-(La representación del tablero lo haremos de la siguiente manera, nosotros vamos a tomar variables tipo char que representen cada espacio, la razón por la que usaremos esas variables será porque ocupan apenas un bits. Si está vacío será un punto y si está ocupado serán dos corchetes haciéndolo parecer un cuadrado, los datos tipo char los representaremos en binario.)
+Dado que el ancho del tablero debe ser múltiplo de 8, aprovechamos que 8 bits forman un byte. Esto nos permite representar cada fila del tablero como uno o varios números enteros sin signo.
+La idea es trabajar el tablero usando memoria dinámica, por medio de un arreglo de punteros (unsigned char**), donde cada fila contiene varios bytes dependiendo del ancho.
+Cada bit dentro de esos bytes representa una celda:
 
+• 1 → ocupado
+• 0 → vacío
 
-Creación del tablero: Para un tablero de ancho W y alto H, necesitaríamos un arreglo dinámico de H elementos, donde cada elemento es un entero que puede almacenar W bits.
-Ajustar el tamaño de la matriz: (Para ajustar el tamaño de la matriz nosotros usaremos la memoria dinámica ya que por medio de esta podemos hacer que el usuario elija que tan grande sera (el numero minimo de ancho y de largo sera 8 ), esto lo haremos por medio de apuntadores)
-
-
-
+Para la visualización, recorremos los bytes y luego cada uno de sus bits para mostrar el estado del tablero en pantalla.
+Creación del tablero: Para un tablero de ancho W y alto H, planteamos un arreglo dinámico de H filas, donde cada fila contiene W/8 bytes inicializados en 0.
+Ajuste del tamaño: Usamos memoria dinámica para permitir que el usuario defina el tamaño del tablero, con un mínimo de 8 y con la condición de que el ancho sea múltiplo de 8.
 
 2. Representación de Datos con Bits: Las Piezas (Tetraminós)
-Cada pieza también debe ser representada como una máscara de bits. Aquí la cosa se pone más interesante porque las piezas tienen formas irregulares.
 
-Similar al tablero, una pieza de tamaño NxM puede ser representada como un arreglo de N números enteros, donde cada número es una máscara de M bits. El uso de literales binarios (0b) hace que la representación de la pieza sea semánticamente clara .
+Cada pieza la representamos como una máscara de bits. Cada tetrimino se maneja como un arreglo de hasta 4 filas, donde cada fila es un número cuyos bits indican la forma.
+El uso de literales binarios (0b) nos permite que la forma de cada pieza sea más clara al momento de definirla.
+Además, cada pieza tiene asociado un ancho y un alto que definen sus dimensiones.
+Las piezas se generan de forma aleatoria y luego las utilizamos dentro del tablero.
 
 3. Manipulación: Operadores a Nivel de Bits (Bitwise)
-Operaciones necesarias para efectuar toda la lógica de fondo detrás del funcionamiento de las mecánicas del tetris:
 
-Desplazamiento (<<, >>): Para mover las piezas horizontalmente. Si una pieza está representada por una máscara de bits, desplazar esa máscara a la izquierda (<<) la mueve a la derecha en el tablero, y viceversa. Por ejemplo, si la máscara de una fila de pieza es 0b00111100, un desplazamiento a la derecha >> 1 la convertiría en 0b00011110, moviéndola celda a la izquierda .
+Las operaciones a nivel de bits son la base para toda la lógica del programa:
+Desplazamiento (<<, >>): Lo utilizamos para acceder a bits específicos dentro de un byte.
+AND bitwise (&): Lo usamos para verificar si un bit está activo y para detectar colisiones.
+OR bitwise (|): Lo usamos para activar bits al fijar una pieza dentro del tablero.
+Estas operaciones nos permiten leer, comparar y modificar el estado de los bits tanto en el tablero como en las piezas.
 
-AND bitwise (&): Este podría ser muy útil para la detección de colisiones. Para verificar si una pieza en una posición (x, y) puede colocarse, se compara su máscara con la máscara de la fila correspondiente del tablero. Si (mascara_pieza & mascara_tablero_fila) != 0, significa que al menos un bit de la pieza coincide con un bit ocupado en el tablero, y la colocación no es válida .
+4. Movimiento de piezas
+El movimiento de las piezas lo manejamos mediante cambios en su posición dentro del tablero.
+Mover a la izquierda o derecha implica modificar la posición horizontal, mientras que bajar implica cambiar la posición vertical.
+Antes de aplicar cualquier movimiento, verificamos si hay colisión con los límites del tablero o con otras piezas. Si hay colisión, el movimiento se cancela.
 
-OR bitwise (|): Para fijar una pieza en el tablero. Una vez que la pieza toca el fondo y no hay colisión, se combina con el tablero usando mascara_tablero_fila |= mascara_pieza. Esto activa los bits de la pieza en el tablero, haciendo que la unificación entre el tablero y la pieza quede concretado.
+5. Rotación de Piezas
+La rotación se plantea como una reorganización de los bits que forman la pieza.
+Para esto, utilizamos un arreglo temporal donde reubicamos los bits en su nueva posición, teniendo en cuenta el cambio de ancho y alto de la pieza.
+Después de rotar, verificamos si la nueva posición genera colisión. Si no hay colisión, aplicamos la rotación.
+Es una de las operaciones más complejas dentro del sistema.
 
-XOR bitwise (^): Puede ser útil para ciertos efectos, pero no es estrictamente necesario para la lógica principal.
-
-NOT bitwise (~): Útil para crear máscaras de límites. Por ejemplo, para comprobar si una pieza se sale por el borde derecho, puedes crear una máscara que tenga un (valor=1) sólo en las columnas válidas y usar para verificar si algún bit de la pieza está fuera.
-
-
-
-4. Rotación de Piezas
-La rotación es una operación bastante compleja ya que en sí, al no poder usarse un patrón ya predefinido de las rotaciones ya existentes para cada figura, nos vemos obligados a manipular los bits mediante el uso de máscaras con el fin de generar los patrones de rotación.
-
-Implementación Teórica: .En este caso, lo mas optimo seria trabajar con todos los tetriminos a manera de matrices nxn, donde aquellos bloques de la matriz que sí hacen parte de la figura podrían ser representados por 1 y los demás por 0.
-Tratamiento de bits: Tras definir lo anterior ahora se deben hacer  operaciones de bits en pro a tratar de aislar un bit específico para luego reubicarlo en su nueva posición. Para esto pueden usarse máscaras (&1), desplazamientos (<< o >>) y operaciones comparativas como el OR.
+6. Gestión de Memoria Dinámica y Punteros
+Asignación Dinámica: Utilizamos memoria dinámica (new) para crear el tablero, ya que su tamaño se define en tiempo de ejecución.
+Punteros: Los usamos para manejar las filas del tablero mediante un arreglo de punteros.
+Limpieza de filas: Detectamos filas completas verificando que todos los bits estén en 1, y luego desplazamos las filas superiores hacia abajo.
+Gestión de memoria: Liberamos la memoria utilizada al final del programa.
 
 
+7. Esquema general del funcionamiento
+Inicio
 
-5. Gestión de Memoria Dinámica y Punteros: A continuación se desarrollaran algunos puntos importantes que son alusivos a esta sección del desafío:
+→ Pedir el alto del tablero
+→ Validar que sea mínimo 8
 
-Asignación Dinámica: Deberás usar new para crear el tablero, cuyo tamaño (ancho x alto) no se conoce hasta la ejecución. Esto para aprovechar (en el caso de recomenzar la partida) el espacio ya usado por el anterior tablero, de esta manera gastando menos memoria.
+→ Pedir el ancho del tablero
+→ Validar que sea múltiplo de 8
 
-Punteros para Eficiencia: Al limpiar una fila, se necesita bajar el contenido de las filas superiores. Esto es una operación de memoria que se puede hacer eficientemente con punteros y copia de memoria, o mediante un bucle que recorra las filas.
+→ Crear tablero
 
-Limpieza de Filas: El algoritmo para detectar una fila completa es simple: si la máscara de una fila del tablero es igual a (1 << ancho) - 1 (todos los bits a 1), está llena. Al eliminarla, debes liberar la memoria de esa fila (si es que se asigna individualmente) o desplazar todos los punteros de las filas superiores una posición hacia abajo. Esto implica copiar direcciones de memoria (punteros) en tu arreglo de filas, una operación muy rápida.
+→ Inicializar aleatoriedad
+→ Generar pieza
+
+Mientras el juego esté activo
+
+→ Mostrar tablero
+
+→ Leer acción del usuario
+
+→ Procesar movimiento
+
+→ Verificar colisión
+   si hay colisión se revierte
+
+→ Si al bajar hay colisión
+   fijar pieza
+   eliminar filas
+   generar nueva pieza
+
+→ Verificar game over
+
+Fin del ciclo
+
+→ Mostrar Game Over
+→ Liberar memoria
+
+Fin
+
+
+PROBLEMAS DENTRO DEL DESARROLLO
+A medida que se fue desarrollando el proyecto surgieron ciertas dificultades para concretar algunas funcionalidades o procesos dentro del funcionamiento del desafío.
+La mayoría de estos problemas estuvieron relacionados a la forma en que los bits interactuaban con el usuario (a nivel de interfaz), y como la representación de estos mismos a nivel de código dentro de la estructura del proyecto.
+A continuación daremos algunos ejemplos de situaciones retadores o problemáticas que aparecieron a medida que se fue desarrollando el proyecto:
+
+•	Dificultad en el manejo de las rotaciones: Ocurría que, en cierto punto del código para efectuar las rotaciones, en vez de invertir el alto y el ancho de la pieza
+(ya que al rotar estas dimensiones se intercambian), se tomaba una dimensión N la cual simplificaba la representación y el manejo de cada una de las partes (bits) que conformaban la pieza.
+
+Este enfoque generaba que todas las figuras fueran percibidas como cuadrados, de altura y ancho iguales generando que para ciertas rotaciones, como se tomaba en cuenta esta dimensión N por encima del alto y ancho reales de la pieza,
+hubiera una falla en la interpretación de rango de recorrido dentro de los ciclos for encargados de extraer la información necesaria para leer, asignar y rotar los bits correspondientes de la figura inicial. No obstante, gracias a la observación y entendimiento de este percance,
+logramos desarrollar una solución simple. Trabajar sencillamente con el alto y ancho de la figura y reinterpretar estos valores al momento de rotar, generando que la mayoría de las figuras sean percibidas como bloques dentro de rectángulos (2x3, 1x4, etc.).
+
+•	Problemas de relación entre game_over y fijar_pieza: Dentro de nuestro código, el game over es la función encargada de dar por terminado el ciclo del juego (game loop) y finalizar todos los procesos relacionados a la ejecución del juego.
+En si mismo, esta función es realmente la implementación de otra, pero ejecutada teniendo en cuenta ciertas condiciones específicas, ya que de fondo el game over es el momento en el cual la nueva pieza generada ya no puede realizar otro movimiento tras el momento de su generación.
+Esto puede interpretarse como una colisión en la cual la pieza no salió de su punto de generación.
+Por lo tanto, la función game over es realmente la implementación de la función encargada de detectar las colisiones entre piezas, pero con la particularidad de que esta tiene que suceder al mismo tiempo de la generación de la pieza actual.
+Teniendo esto en cuenta en cierto punto del desarrollo, cuando ya casi todo el código estaba casi listo, logramos percatarnos de que al momento de probar el desempeño de la función game over obteníamos este error: QProcess:Crashed "Process crashed".
+
+Esto generaba un aborto de ejecución justo cuando el programa debía de mostrar al usuario el mensaje de final del juego, lo cual resultaba bastante extraño. Aun así, y tras analizar repetidas veces varios aspectos del código,
+nos percatamos que en la función encargada de manejar el contenido que será puesto dentro de cada índice del tablero había una falla lógica. En pocas palabras al detectar una colisión,
+el programa inmediatamente llama a la función fijar_pieza y busca reflejar esta información dentro del tablero de juego. El problema surge cuando en el caso del game over, los índices correspondientes a la pieza que la función buscara fijar están por fuera del tablero (tablero[-1] por ejemplo)
+lo cual es una operación ilegal que induce al aborto de ejecución del programa. Finalmente, tras entender toda la lógica detrás del problema sencillamente agregamos un condicional dentro de la función fijar_tablero la cual es que la función solo pondrá los bits correspondientes SOLO SI estos se encuentran dentro del tablero.
+
+
+•	Complejidad tras imprimir frame: La función imprimir frame es la encargada de actualizar a NIVEL GRAFICO o de interfaz el estado del tablero para que de esta manera los cambios hechos por el usuario al mover la ficha o al haber la aparición de una nueva pieza dentro del tablero puedan verse reflejados visualmente.
+Esta es una premisa sencilla, pero para llegar a un resultado eficaz para el correcto funcionamiento del juego se requiere implementar una gran serie de recorridos a lo largo del tablero para hallar los puntos exactos en los cuales se encuentra un bit relacionado a una pieza,
+para luego representar los espacios ocupados (1) con un [] y los vacíos (0) con un “ .” .  De esta manera puede haber concordancia entre lo que se ve y lo que se hace en el tablero.
+No obstante, mas allá de los recorridos necesarios para hallar los índices y bits correspondientes, lo realmente complejo es implementar correctamente las operaciones a nivel de bits para hallar en que parte exacta la pieza debe representarse en el tablero y de esta forma que bits dentro del esquema de la pieza son 1 o 0.
 
 
 CONCLUSIÓN
-Este documento de análisis busca delimitar y entender aquellos conceptos necesarios para la solución del problema propuesto en el desafío de la manera más óptima posible. Además dentro del desglose de los conceptos enfatizamos algunas opciones las cuales pueden llegar a ser implementadas en el futuro dentro de la solución.
-
+Este análisis plantea el uso de bits como base para representar tanto el tablero como las piezas, junto con las operaciones necesarias para manipularlos. Se define la estructura general del sistema, incluyendo la creación del tablero, la representación de las piezas y las operaciones fundamentales que permiten el funcionamiento del juego.
 
