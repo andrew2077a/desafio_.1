@@ -117,6 +117,10 @@ para luego representar los espacios ocupados (1) con un [] y los vacíos (0) con
 No obstante, mas allá de los recorridos necesarios para hallar los índices y bits correspondientes, lo realmente complejo es implementar correctamente las operaciones a nivel de bits para hallar en que parte exacta la pieza debe representarse en el tablero y de esta forma que bits dentro del esquema de la pieza son 1 o 0.
 
 
+EVOLUCION DE LA SOLUCION Y CONSIDERACIONES EN LA IMPLEMENTACION:
+A medida que fuimso desarrollando, maduramos nuestra perspectiva acerca del manejo de operaciones de bitwise mas que todo (el cual a nuestro parecer) fue el punto que mas genero complejidades al momento de implementarlo. No obstante, el codigo al tener una logica tan reiterativa, llego el punto en el cu al nos familiarizamos con el uso e implementacion de forma mas comun de estas herramientas dentro del codigo lo que facilito la solucion y analisis de las nuevas problematicas que iban surgiendo (como las nuevas comprobaciones necesarias para evitar abortos de ejecucion en funciones como rotar y fijar piezas). De esta manera sentimos que aunque el codigo no es un 10/10 consideramos que tiene una gran solidez como proyecto.
+
+
 CONCLUSIÓN
 Este análisis plantea el uso de bits como base para representar tanto el tablero como las piezas, junto con las operaciones necesarias para manipularlos. Se define la estructura general del sistema, incluyendo la creación del tablero, la representación de las piezas y las operaciones fundamentales que permiten el funcionamiento del juego.
 
